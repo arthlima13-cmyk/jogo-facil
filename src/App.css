@@ -5,17 +5,38 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  color: #ffffff;
+  color: white;
+  min-height: 100vh;
+
   background:
-    linear-gradient(rgba(2, 6, 23, 0.78), rgba(2, 6, 23, 0.88)),
+    linear-gradient(
+      rgba(0,0,0,0.55),
+      rgba(0,0,0,0.65)
+    ),
     repeating-linear-gradient(
       90deg,
-      #166534 0px,
-      #166534 80px,
-      #15803d 80px,
-      #15803d 160px
+      #2e8b57 0px,
+      #2e8b57 120px,
+      #3cb371 120px,
+      #3cb371 240px
     );
-  background-attachment: fixed;
+
+  position: relative;
+  body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(
+      transparent calc(50% - 2px),
+      rgba(255,255,255,0.15) calc(50% - 2px),
+      rgba(255,255,255,0.15) calc(50% + 2px),
+      transparent calc(50% + 2px)
+    );
+
+  z-index: 0;
 }
 
 .app {
