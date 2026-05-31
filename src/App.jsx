@@ -15,6 +15,7 @@ function App() {
     time: '',
     price: '',
     maxPlayers: '',
+    pixKey: '',
   })
 
   const [editForm, setEditForm] = useState({
@@ -24,6 +25,7 @@ function App() {
     time: '',
     price: '',
     maxPlayers: '',
+    pixKey: '',
   })
 
   useEffect(() => {
@@ -82,6 +84,7 @@ function App() {
       time: gameData.time,
       price: gameData.price,
       maxPlayers: gameData.max_players,
+      pixKey: gameData.pix_key || '',
       players: playersData || [],
     })
 
@@ -100,6 +103,7 @@ function App() {
         time: form.time,
         price: Number(form.price),
         max_players: Number(form.maxPlayers),
+        pix_key: form.pixKey,
       })
       .select()
       .single()
@@ -117,6 +121,7 @@ function App() {
       time: data.time,
       price: data.price,
       maxPlayers: data.max_players,
+      pixKey: data.pix_key || '',
       players: [],
     }
 
@@ -132,6 +137,7 @@ function App() {
       time: game.time,
       price: game.price,
       maxPlayers: game.maxPlayers,
+      pixKey: game.pixKey || '',
     })
 
     setIsEditingGame(true)
@@ -149,6 +155,7 @@ function App() {
         time: editForm.time,
         price: Number(editForm.price),
         max_players: Number(editForm.maxPlayers),
+        pix_key: editForm.pixKey,
       })
       .eq('id', game.id)
 
@@ -165,6 +172,7 @@ function App() {
       time: editForm.time,
       price: editForm.price,
       maxPlayers: editForm.maxPlayers,
+      pixKey: editForm.pixKey,
     }))
 
     setIsEditingGame(false)
@@ -233,7 +241,7 @@ function App() {
 
   function copyGameLink() {
     navigator.clipboard.writeText(window.location.href)
-    alert('Link copiado!')
+    alert('Link do jogo copiado!')
   }
 
   function generateWhatsAppMessage() {
@@ -242,40 +250,58 @@ function App() {
     const notConfirmedPlayers = game.players.filter((p) => !p.confirmed)
 
     const lines = [
-      `⚽ *${game.title}*`,
+      `⚽ *JOGO FÁCIL*`,
       '',
+      `🏟️ *${game.title}*`,
       `📍 Local: ${game.location}`,
       `📅 Data: ${game.date}`,
       `🕒 Horário: ${game.time}`,
       `💰 Valor por jogador: R$ ${game.price}`,
       `👥 Vagas: ${game.maxPlayers}`,
       '',
-      `✅ *Confirmados e pagos:*`,
+      game.pixKey ? `🔑 *PIX do organizador:* ${game.pixKey}` : '',
+      game.pixKey ? '' : '',
+      '━━━━━━━━━━━━━━',
+      '',
+      `✅ *CONFIRMADOS E PAGOS (${paidPlayers.length})*`,
+      '',
       paidPlayers.length
         ? paidPlayers.map((p, i) => `${i + 1}. ${p.name}`).join('\n')
         : 'Nenhum jogador pago ainda.',
       '',
-      `⏳ *Confirmados pendentes:*`,
+      '━━━━━━━━━━━━━━',
+      '',
+      `⏳ *CONFIRMADOS PENDENTES (${pendingPlayers.length})*`,
+      '',
       pendingPlayers.length
         ? pendingPlayers.map((p, i) => `${i + 1}. ${p.name}`).join('\n')
         : 'Nenhum pendente.',
       '',
-      `❌ *Não confirmaram:*`,
+      '━━━━━━━━━━━━━━',
+      '',
+      `❌ *NÃO CONFIRMARAM (${notConfirmedPlayers.length})*`,
+      '',
       notConfirmedPlayers.length
         ? notConfirmedPlayers.map((p, i) => `${i + 1}. ${p.name}`).join('\n')
         : 'Todos confirmaram.',
       '',
-      `📊 *Resumo:*`,
-      `Confirmados: ${summary.confirmed}`,
-      `Pagos: ${summary.paid}`,
-      `Pendentes: ${summary.pending}`,
-      `Total arrecadado: R$ ${summary.total}`,
-      `Vagas livres: ${summary.freeSpots}`,
+      '━━━━━━━━━━━━━━',
       '',
-      `🔗 Link da lista: ${window.location.href}`,
+      `📊 *RESUMO*`,
       '',
-      `Organizado pelo Jogo Fácil.`,
-    ]
+      `👥 Confirmados: ${summary.confirmed}`,
+      `💰 Pagos: ${summary.paid}`,
+      `⏳ Pendentes: ${summary.pending}`,
+      `💵 Arrecadado: R$ ${summary.total}`,
+      `⚽ Vagas livres: ${summary.freeSpots}`,
+      '',
+      '━━━━━━━━━━━━━━',
+      '',
+      `🔗 *Lista do jogo:*`,
+      `${window.location.href}`,
+      '',
+      `Organizado pelo *Jogo Fácil*.`,
+    ].filter(Boolean)
 
     const message = encodeURIComponent(lines.join('\n'))
     window.open(`https://wa.me/?text=${message}`, '_blank')
@@ -306,6 +332,7 @@ function App() {
             <input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} required />
             <input type="number" placeholder="Valor por jogador" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
             <input type="number" placeholder="Número de vagas" value={form.maxPlayers} onChange={(e) => setForm({ ...form, maxPlayers: e.target.value })} required />
+            <input placeholder="Chave PIX do organizador" value={form.pixKey} onChange={(e) => setForm({ ...form, pixKey: e.target.value })} />
 
             <button type="submit">Criar jogo</button>
           </form>
@@ -330,7 +357,7 @@ function App() {
             </button>
 
             <button onClick={copyGameLink} className="secondary">
-              Copiar link
+              📋 Copiar link do jogo
             </button>
 
             <button onClick={() => {
@@ -389,6 +416,12 @@ function App() {
               required
             />
 
+            <input
+              placeholder="Chave PIX do organizador"
+              value={editForm.pixKey}
+              onChange={(e) => setEditForm({ ...editForm, pixKey: e.target.value })}
+            />
+
             <button type="submit">Salvar alterações</button>
 
             <button type="button" className="secondary" onClick={() => setIsEditingGame(false)}>
@@ -438,7 +471,7 @@ function App() {
         </div>
 
         <button onClick={generateWhatsAppMessage} className="whatsapp">
-          Enviar lista no WhatsApp
+          📲 Enviar lista no WhatsApp
         </button>
       </section>
     </main>
