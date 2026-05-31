@@ -6,7 +6,18 @@ function App() {
   const [game, setGame] = useState(null)
   const [loading, setLoading] = useState(false)
   const [playerName, setPlayerName] = useState('')
+  const [isEditingGame, setIsEditingGame] = useState(false)
+
   const [form, setForm] = useState({
+    title: '',
+    location: '',
+    date: '',
+    time: '',
+    price: '',
+    maxPlayers: '',
+  })
+
+  const [editForm, setEditForm] = useState({
     title: '',
     location: '',
     date: '',
@@ -111,6 +122,52 @@ function App() {
 
     setGame(newGame)
     window.history.pushState({}, '', `/jogo/${data.id}`)
+  }
+
+  function startEditingGame() {
+    setEditForm({
+      title: game.title,
+      location: game.location,
+      date: game.date,
+      time: game.time,
+      price: game.price,
+      maxPlayers: game.maxPlayers,
+    })
+
+    setIsEditingGame(true)
+  }
+
+  async function saveGameChanges(event) {
+    event.preventDefault()
+
+    const { error } = await supabase
+      .from('games')
+      .update({
+        title: editForm.title,
+        location: editForm.location,
+        date: editForm.date,
+        time: editForm.time,
+        price: Number(editForm.price),
+        max_players: Number(editForm.maxPlayers),
+      })
+      .eq('id', game.id)
+
+    if (error) {
+      alert('Erro ao salvar alterações: ' + error.message)
+      return
+    }
+
+    setGame((currentGame) => ({
+      ...currentGame,
+      title: editForm.title,
+      location: editForm.location,
+      date: editForm.date,
+      time: editForm.time,
+      price: editForm.price,
+      maxPlayers: editForm.maxPlayers,
+    }))
+
+    setIsEditingGame(false)
   }
 
   async function addPlayer(event) {
@@ -268,15 +325,77 @@ function App() {
           </div>
 
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button onClick={copyGameLink} className="secondary">Copiar link</button>
+            <button onClick={startEditingGame} className="secondary">
+              Editar jogo
+            </button>
+
+            <button onClick={copyGameLink} className="secondary">
+              Copiar link
+            </button>
+
             <button onClick={() => {
               setGame(null)
+              setIsEditingGame(false)
               window.history.pushState({}, '', '/')
             }} className="secondary">
               Novo jogo
             </button>
           </div>
         </div>
+
+        {isEditingGame && (
+          <form onSubmit={saveGameChanges} className="form" style={{ marginBottom: '24px' }}>
+            <input
+              placeholder="Nome do jogo"
+              value={editForm.title}
+              onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+              required
+            />
+
+            <input
+              placeholder="Local"
+              value={editForm.location}
+              onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+              required
+            />
+
+            <input
+              type="date"
+              value={editForm.date}
+              onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+              required
+            />
+
+            <input
+              type="time"
+              value={editForm.time}
+              onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
+              required
+            />
+
+            <input
+              type="number"
+              placeholder="Valor por jogador"
+              value={editForm.price}
+              onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+              required
+            />
+
+            <input
+              type="number"
+              placeholder="Número de vagas"
+              value={editForm.maxPlayers}
+              onChange={(e) => setEditForm({ ...editForm, maxPlayers: e.target.value })}
+              required
+            />
+
+            <button type="submit">Salvar alterações</button>
+
+            <button type="button" className="secondary" onClick={() => setIsEditingGame(false)}>
+              Cancelar edição
+            </button>
+          </form>
+        )}
 
         <div className="summary">
           <div><strong>{summary.confirmed}</strong><span>Confirmados</span></div>
